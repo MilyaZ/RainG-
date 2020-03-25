@@ -16,16 +16,32 @@ namespace rain
         private Thread t = null;
         public bool IsAlive { get { return t != null && t.IsAlive; } }
 
-
+        public static int X1;
 
         public int X { get; private set; }
         public int Y { get; private set; }
+        public Point T1 { get; private set; }
+        public Point T2 { get; private set; }
+        public Point T3 { get; private set; }
+        public Point T4 { get; private set; }
+        private int b_width;
+        private int b_heigth;
+        
+
 
         public Bucket(Rectangle r)
         {
             Update(r);
-            X = Form1.X;
-            Y = heigth -20;
+            b_heigth = 50;
+            b_width = 60;
+            X = X1;
+            Y = heigth -b_heigth;
+            T1 = new Point(X - b_width, Y - b_heigth);
+            T2 = new Point(X + b_width, Y - b_heigth);
+            T3 = new Point(X + b_width / 2, Y + b_heigth);
+            T4 = new Point(X - b_width / 2, Y + b_heigth);
+
+            Start();
            
         }
 
@@ -33,8 +49,12 @@ namespace rain
         {
             while (!stop)
             {
-                
-                X = Form1.X;
+                X = X1;
+                Y = heigth - b_heigth;
+                T1 = new Point(X - b_width, Y - b_heigth);
+                T2 = new Point(X + b_width, Y - b_heigth);
+                T3 = new Point(X + b_width / 2, Y + b_heigth);
+                T4 = new Point(X - b_width / 2, Y + b_heigth);
             }
         }
         public void Start()
@@ -50,6 +70,7 @@ namespace rain
         public void Stop()
         {
             stop = true;
+            t.Abort();
         }
 
         public void Update(Rectangle r)

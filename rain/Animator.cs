@@ -39,6 +39,7 @@ namespace rain
             {
                 d.Update(r);
             }
+            if(buc!=null) buc.Update(r);
             Monitor.Exit(drops);
             //Monitor.Enter(drops);//параметр ссылочный тип.
         }
@@ -80,44 +81,56 @@ namespace rain
                     g.DrawPath(p1, cloud);
                     x += 450;
 
-                }
-                int k=0;
-                if (Program.bucket && buc != null)
+                }          
+                if (Program.bucket && buc!=null)
                 {
-
+                                       
                     var bucket = new GraphicsPath();
                     bucket.StartFigure();
-                    bucket.AddLine(Form1.X - 20, Form1.Y - 20, Form1.X + 20, Form1.Y - 20);
-                    bucket.AddLine(Form1.X + 20, Form1.Y - 20, Form1.X + 10, Form1.Y + 20);
-                    bucket.AddLine(Form1.X + 10, Form1.Y + 20, Form1.X - 10, Form1.Y + 20);
-                    bucket.AddLine(Form1.X - 10, Form1.Y + 20, Form1.X - 20, Form1.Y - 20);
+                    bucket.AddLine(buc.T1,buc.T2);
+                    bucket.AddLine(buc.T2, buc.T3);
+                    bucket.AddLine(buc.T3, buc.T4);
+                    bucket.AddLine(buc.T4, buc.T1);
+
                     bucket.CloseFigure();
                     Brush br = new SolidBrush(Color.Gray);
                     g.FillPath(br, bucket);
                     Pen p = new Pen(Color.Black, 1);
                     g.DrawPath(p, bucket);
-                    k = Form1.X;
+                   
                 }
+                Monitor.Enter(drops);
 
                 for (int i = 0; i < Drop.Count; i++)
                 {
-                    if (!drops[i].IsAlive) 
-                    {
-                        drops[i].Stop();
-                        drops.Remove(drops[i]);
-                        i--;
-                        Drop.Count--;
-                    }   
-                    if (drops[i].X - 5 > k - 20 && drops[i].X + 5 < k + 20 && drops[i].Y > heigth - 40)
-                    {
-                        drops[i].Stop();
-                        drops.Remove(drops[i]);
-                        i--;
-                        Drop.Count--;
 
+                    if (buc != null &&
+                         drops[i].X - 5 > buc.T1.X && drops[i].X + 5 < buc.T2.X && drops[i].Y >= buc.T1.Y )
+                    {
+                        drops[i].Stop();
+                        drops.Remove(drops[i]);
+                        i--;
+                        Drop.Count--;
+                        Rain.Count++;
                     }
-                }
+                    else
+                    {
 
+                        if (!drops[i].IsAlive)
+                        {
+                            if (buc != null&& Rain.Count>0 && drops[i].X > 0 && drops[i].X <width)
+                            {
+                                Rain.Miss++;
+                            }
+                            drops[i].Stop();
+                            drops.Remove(drops[i]);
+                            i--;
+                            Drop.Count--;
+                        }
+                    }
+
+                }
+                Monitor.Exit(drops);
                 Monitor.Enter(drops);
                 foreach (var d in drops)
                 {
@@ -127,6 +140,7 @@ namespace rain
                     drop.AddArc(d.X - 5, d.Y + 15, 10, 5, 0, 180);
                     drop.AddLine(d.X - 5,d.Y + 15, d.X, d.Y);
                     drop.CloseFigure();
+
                     Brush br = new SolidBrush(Color.Blue);
                     g.FillPath(br, drop);
                     Pen p = new Pen(Color.Blue, 2);
@@ -171,10 +185,11 @@ namespace rain
             drops.Add(d);
             Drop.Count++;
             Monitor.Exit(drops);
-            if (Program.bucket && buc==null)
+            if (Program.bucket && buc == null)
             {
                 buc = new Bucket(rect);
             }
+
 
         }
         public void Stop()
@@ -184,7 +199,15 @@ namespace rain
             foreach (var d in drops)
             {
                 d.Stop();
+                Drop.Count--;
             }
+            if (buc != null)
+            {
+                buc.Stop();
+                buc = null;
+                Program.bucket = false;
+            }
+            
             drops.Clear();
             Monitor.Exit(drops);
         }

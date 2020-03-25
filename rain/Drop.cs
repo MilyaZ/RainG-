@@ -31,7 +31,7 @@ namespace rain
             Update(r);
             if (rand == null) rand = new Random();
 
-            X = rand.Next(-r.Width, r.Width*2);
+            X = rand.Next(-r.Height, (r.Width+r.Height));
             while((X > 0 && X < 10)||(X>410 && X<460)|| (X > 860 && X < 910)|| (X > 1310 && X < 1360))//Для облаков
             {
                 X = rand.Next(-r.Width, r.Width * 2);
@@ -48,6 +48,7 @@ namespace rain
                 Thread.Sleep(30);
                 Y += dy;
                 X += dx;
+                if(Y> heigth) {  t.Abort(); }
             }
         }
         public void Start()
@@ -63,6 +64,8 @@ namespace rain
         public void Stop()
         {
            stop = true;
+            t.Abort();
+
         }
         
         public void Update(Rectangle r)
